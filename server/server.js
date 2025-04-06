@@ -61,33 +61,50 @@ app.get('/api/users/:username/task-completions', async (req, res) => {
 });
 
 
-
-// Get time spent on tasks
-app.get('/api/users/:username/time-spent', async (req, res) => {
+// Get task analytics data
+app.get('/api/users/:username/task-analytics', async (req, res) => {
   try {
     const { username } = req.params;
-    const query = `
-      SELECT 
-        utd.data_id,
-        ts.statement_text,
-        ta.area_name,
-        utd.processing_time
-      FROM 
-        user_task_data utd
-      JOIN 
-        task_statements ts ON utd.statement_id = ts.statement_id
-      JOIN 
-        task_areas ta ON utd.task_area_id = ta.area_id
-      WHERE 
-        utd.username = $1
-      ORDER BY 
-        utd.processing_time DESC
-    `;
-    
-    const result = await pool.query(query, [username]);
-    res.json(result.rows);
+    const totalProcessingTimeQuery = `
+    SELECT 
+      ta.area_name AS area_name,
+      COALESCE(SUM(utd.processing_time), 0) AS total_time
+    FROM task_areas ta
+    LEFT JOIN user_task_data utd 
+      ON ta.area_id = utd.task_area_id 
+      AND utd.username = $1
+    GROUP BY ta.area_id
+    ORDER BY ta.area_id;
+  `;
+
+    const averageDifficultyQuery =  `
+    SELECT
+    area_name,
+    area_id,
+    SUM(difficulty_level_int)
+    CASE 
+        WHEN difficulty_level = 'very easy' THEN 1
+        WHEN difficulty_level = 'easy' THEN 2
+        WHEN difficulty_level = 'normal' THEN 3
+        WHEN difficulty_level = 'difficult' THEN 4
+        WHEN difficulty_level = 'very difficult' THEN 5
+    END AS difficulty_level_int
+    FROM user_task_data
+    WHERE username = $1
+    GROUP BY area_id
+    ORDER BY area_id
+  `;
+
+
+    const totalProcessingTimeResult = await pool.query(totalProcessingTimeQuery, [username]);
+    const averageDifficultyResult = await pool.query(averageDifficultyQuery, [username]);
+    res.json({
+      totalProcessingTime: totalProcessingTimeResult.rows,
+      averageDifficulty: averageDifficultyResult.rows
+    });
+
   } catch (error) {
-    console.error('Error fetching time spent data:', error);
+    console.error('Error fetching task analytics:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });
