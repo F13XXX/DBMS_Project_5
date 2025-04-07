@@ -47,8 +47,7 @@ const TaskCompletion = ({ taskCompletions }) => {
       areaMap[areaName].completed += 1;
     }
     
-    let difficulty = null;
-    if (task.difficulty_level !== undefined) difficulty = task.difficulty_level;
+    let difficulty = task.difficulty_level;
     
     areaMap[areaName].tasks.push({
       id: task.statement_id,
@@ -196,6 +195,7 @@ const TaskCompletion = ({ taskCompletions }) => {
                               active={sortConfig.key === 'id' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'id' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('id', area.name)}
+                              style={{ fontWeight: 'bold' }}
                             >
                               Task ID
                             </TableSortLabel>
@@ -205,6 +205,7 @@ const TaskCompletion = ({ taskCompletions }) => {
                               active={sortConfig.key === 'name' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'name' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('name', area.name)}
+                              style={{ fontWeight: 'bold' }}
                             >
                               Task
                             </TableSortLabel>
@@ -214,6 +215,7 @@ const TaskCompletion = ({ taskCompletions }) => {
                               active={sortConfig.key === 'isCompleted' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'isCompleted' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('isCompleted', area.name)}
+                              style={{ fontWeight: 'bold' }}
                             >
                               Status
                             </TableSortLabel>
@@ -223,6 +225,7 @@ const TaskCompletion = ({ taskCompletions }) => {
                               active={sortConfig.key === 'difficulty' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'difficulty' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('difficulty', area.name)}
+                              style={{ fontWeight: 'bold' }}
                             >
                               Difficulty
                             </TableSortLabel>
@@ -232,6 +235,7 @@ const TaskCompletion = ({ taskCompletions }) => {
                               active={sortConfig.key === 'time_spent' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'time_spent' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('time_spent', area.name)}
+                              style={{ fontWeight: 'bold' }}
                             >
                               Time Spent
                             </TableSortLabel>

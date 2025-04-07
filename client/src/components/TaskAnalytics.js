@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  BarChart, 
-  Bar, 
+  ComposedChart, 
+  Bar,
+  Line,
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from 'recharts';
 import { 
   Grid, 
@@ -17,7 +18,7 @@ import {
   Box
 } from '@mui/material';
 
-const CHART_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const CHART_COLORS = ['#0088FE', '#FE7600', '#FFBB28', '#FF8042', '#8884d8'];
 
 const TaskAnalytics = ({ username }) => {
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -49,13 +50,15 @@ const TaskAnalytics = ({ username }) => {
     ? analyticsData.totalProcessingTime.map(item => ({
         ...item,
         total_time: Number(item.total_time), // Convert to number
+        global_avg: Number(item.global_avg),
       }))
     : [];
 
-    const processedDifficultyData = analyticsData
+    const processedDifficultyData = analyticsData && analyticsData.averageDifficulty
     ? analyticsData.averageDifficulty.map(item => ({
         ...item,
-        average_difficulty: parseFloat(item.average_difficulty), // Convert valid strings to float
+        personal_avg_diff: parseFloat(item.personal_avg_diff),
+        global_avg_diff: parseFloat(item.global_avg_diff),
       }))
     : [];
 
@@ -76,103 +79,124 @@ const TaskAnalytics = ({ username }) => {
   }
   
   return (
-      <Box>
-        <Typography variant="h6" component="h2" gutterBottom>
-          Statistics
+<Box>
+  <Typography variant="h6" component="h2" gutterBottom>
+    Statistics
+  </Typography>
+  <Grid container spacing={3}>
+    <Grid item xs={12} md={6}>
+      <Paper sx={{ p: 2, height: 400 }}>
+        {/* Title for the First Chart */}
+        <Typography 
+          variant="h6" 
+          component="h2" 
+          sx={{ textAlign: 'center', fontFamily: 'Arial', mb: 1 }}
+        >
+          Time Spent on Assignments by User vs Average
         </Typography>
-        <Grid container spacing={3} sx={{ mt: 2 }}>
-          {/* First Box/Graph */}
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2, height: 400 }}>
-              <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                {processedTimeData && processedTimeData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={processedTimeData}
-                      margin={{ top: 10, right: 20, left: 10, bottom: 25 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="area_name" 
-                        label={{ value: 'Task Area', position: 'bottom', fontSize: '20px', fontFamily: 'arial' }} 
-                        tick={{ fontSize: '12px' }} 
-                      />
-                      <YAxis 
-                        domain={[0, 'auto']} 
-                        label={{
-                          value: 'Total Processing Time (Minutes)',
-                          angle: -90,
-                          position: 'center',
-                          fontSize: '20px',
-                          fontFamily: 'arial',
-                          dx: -15
-                        }} 
-                        tick={{ fontSize: '12px' }}
-                      />
-                      <Tooltip formatter={(value) => [`${value} minutes`, 'Total Time']} />
-                      <Bar
-                        dataKey="total_time"
-                        name="Total Time Spent (Minutes)"
-                        fill={CHART_COLORS[0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Typography variant="body2">No processing time data available</Typography>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-    
-          {/* Second Box/Graph */}
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2, height: 400 }}>
-              <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                {processedDifficultyData && processedDifficultyData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={processedDifficultyData}
-                      margin={{ top: 10, right: 20, left: 10, bottom: 25 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="area_name" 
-                        label={{
-                          value: 'Task Area',
-                          position: 'bottom',
-                          fontSize: '20px',
-                          fontFamily: 'arial'
-                        }} 
-                        tick={{ fontSize: '12px' }} 
-                      />
-                      <YAxis 
-                        domain={[0, 5]} 
-                        label={{
-                          value: 'AVG Difficulty',
-                          angle: -90,
-                          position: 'center',
-                          fontSize: '20px',
-                          fontFamily: 'arial',
-                          dx: -15
-                        }} 
-                        tick={{ fontSize: '12px' }}
-                      />
-                      <Tooltip formatter={(value) => [`${value}`, 'AVG Difficulty']} />
-                      <Bar
-                        dataKey="average_difficulty"
-                        name="Average Difficulty"
-                        fill={CHART_COLORS[0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Typography variant="body2">No processing difficulty data available</Typography>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
+
+        <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          {processedTimeData && processedTimeData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={processedTimeData}
+                margin={{ top: 10, right: 20, left: 10, bottom: 25 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="area_name" 
+                  label={{ value: '', position: 'bottom', fontSize: '20px', fontFamily: 'Arial' }} 
+                  tick={{ fontSize: '16px' }} 
+                />
+                <YAxis 
+                  domain={[0, 'auto']} 
+                  label={{
+                    value: 'Time Spent (Minutes)',
+                    angle: -90,
+                    position: 'center',
+                    fontSize: '20px',
+                    fontFamily: 'Arial',
+                    dx: -20
+                  }} 
+                  tick={{ fontSize: '14px' }}
+                />
+                <Tooltip formatter={(value) => [`${value} minutes`, 'Total Time']} />
+                <Bar dataKey="total_time" name="User Time Spent" fill={CHART_COLORS[0]} />
+                <Line type="monotone" dataKey="global_avg" name="Average Time Spent" stroke={CHART_COLORS[2]} strokeWidth={2} />
+                <Legend 
+                  wrapperStyle={{
+                    bottom: 25,
+                    left: 125,
+                    padding: '5px',
+                    width: 'auto',
+                  }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          ) : (
+            <Typography variant="body2">No processing time data available</Typography>
+          )}
+        </Box>
+      </Paper>
+    </Grid>
+
+    {/* Second Box/Graph */}
+    <Grid item xs={12} md={6}>
+      <Paper sx={{ p: 2, height: 400 }}>
+        <Typography 
+          variant="h6" 
+          component="h2" 
+          sx={{ textAlign: 'center', fontFamily: 'Arial', mb: 1 }}
+        >
+          Average Difficulty Rating by User vs Average
+        </Typography>
+
+        <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          {processedDifficultyData && processedDifficultyData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={processedDifficultyData}
+                margin={{ top: 10, right: 20, left: 10, bottom: 25 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="area_name" 
+                  label={{ value: '', position: 'bottom', fontSize: '20px', fontFamily: 'Arial' }} 
+                  tick={{ fontSize: '16px' }} 
+                />
+                <YAxis 
+                  domain={[0, 5]} 
+                  label={{
+                    value: 'Difficulty',
+                    angle: -90,
+                    position: 'center',
+                    fontSize: '20px',
+                    fontFamily: 'Arial',
+                    dx: -20
+                  }} 
+                  tick={{ fontSize: '14px' }}
+                />
+                <Tooltip formatter={(value) => [`${value}`, 'Rating']} />
+                <Bar dataKey="personal_avg_diff" name="User Rating" fill={CHART_COLORS[0]} />
+                <Line type="monotone" dataKey="global_avg_diff" name="Average Rating" stroke={CHART_COLORS[2]} strokeWidth={2} />
+                <Legend 
+                  wrapperStyle={{
+                    bottom: 25,
+                    left: 125,
+                    padding: '5px',
+                    width: 'auto',
+                  }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          ) : (
+            <Typography variant="body2">No processing time data available</Typography>
+          )}
+        </Box>
+      </Paper>
+    </Grid>
+  </Grid>
+</Box>
     );
 };
 
