@@ -61,9 +61,8 @@ INSERT INTO task_statements (statement_id, statement_text, area_id, solution_que
 
 INSERT INTO user_task_data (username, statement_id, task_area_id, query_text, is_executable, result_size, is_correct, partial_solution, difficulty_level, processing_time) VALUES
 ('alice', 1, 1, 'SELECT * FROM email.person;', true, 100, true, NULL, 'Easy', 20),
-('alice', 2, 1, 'SELECT * FROM email.person;', true, 50, true, NULL, 'Medium', 15),
+('alice', 2, 1, 'SELECT * FROM email.person;', true, 50, true, NULL, 'Normal', 15),
 ('alice', 3, 1, 'SELECT * FROM email.person;', true, 100, true, NULL, 'Easy', 25),
 ('alice', 4, 1, 'SELECT * FROM email.person;', true, 50, true, NULL, 'Very Difficult', 110),
-('alice', 5, 2, 'SELECT department_name, person_firstname, person_lastname FROM enron.perdep;', true, 50, true, NULL, 'Medium', 21),
+('alice', 5, 2, 'SELECT department_name, person_firstname, person_lastname FROM enron.perdep;', true, 50, true, NULL, 'Normal', 21),
 ('alice', 6, 2, 'SELECT department_name, person_firstname, person_lastname FROM enron.perdep;', true, 100, true, NULL, 'Easy', 29);
-

@@ -66,35 +66,80 @@ app.get('/api/users/:username/task-analytics', async (req, res) => {
   try {
     const { username } = req.params;
     const totalProcessingTimeQuery = `
-    SELECT 
-      ta.area_name AS area_name,
-      COALESCE(SUM(utd.processing_time), 0) AS total_time
-    FROM task_areas ta
-    LEFT JOIN user_task_data utd 
-      ON ta.area_id = utd.task_area_id 
-      AND utd.username = $1
-    GROUP BY ta.area_id
-    ORDER BY ta.area_id;
+    WITH personal_processing_time AS (
+      SELECT 
+        ta.area_name,
+        ta.area_id,
+        COALESCE(SUM(utd.processing_time), 0) AS total_time
+      FROM task_areas ta
+      LEFT JOIN user_task_data utd 
+        ON ta.area_id = utd.task_area_id 
+        AND utd.username = $1
+      GROUP BY ta.area_id
+    )
+    SELECT
+      ppt.area_id,
+      ppt.area_name,
+      ppt.total_time,
+      COALESCE(AVG(utd.processing_time), 0) AS global_avg
+    FROM personal_processing_time AS ppt
+    LEFT JOIN user_task_data utd
+    ON ppt.area_id = utd.task_area_id
+    GROUP BY ppt.area_id, ppt.area_name, ppt.total_time
+    ORDER BY ppt.area_id
   `;
 
     const averageDifficultyQuery =  `
+    WITH personal_average AS (
+      SELECT
+        ta.area_id,
+        ta.area_name,
+        COALESCE(
+          AVG(
+            CASE LOWER(utd.difficulty_level)
+              WHEN 'very easy' THEN 1
+              WHEN 'easy' THEN 2
+              WHEN 'normal' THEN 3
+              WHEN 'difficult' THEN 4
+              WHEN 'very difficult' THEN 5
+            END
+          ), 0
+        ) AS personal_avg_diff
+      FROM task_areas ta
+      LEFT JOIN user_task_data utd 
+        ON ta.area_id = utd.task_area_id 
+        AND utd.username = $1
+      GROUP BY ta.area_id, ta.area_name
+    ),
+    global_avg AS (
+      SELECT
+        ta.area_id,
+        COALESCE(
+          AVG(
+            CASE LOWER(utd.difficulty_level)
+              WHEN 'very easy' THEN 1
+              WHEN 'easy' THEN 2
+              WHEN 'normal' THEN 3
+              WHEN 'difficult' THEN 4
+              WHEN 'very difficult' THEN 5
+            END
+          ), 0
+        ) AS global_avg_diff
+      FROM task_areas ta
+      LEFT JOIN user_task_data utd 
+        ON ta.area_id = utd.task_area_id
+      GROUP BY ta.area_id
+    )
     SELECT
-    area_name,
-    area_id,
-    SUM(difficulty_level_int)
-    CASE 
-        WHEN difficulty_level = 'very easy' THEN 1
-        WHEN difficulty_level = 'easy' THEN 2
-        WHEN difficulty_level = 'normal' THEN 3
-        WHEN difficulty_level = 'difficult' THEN 4
-        WHEN difficulty_level = 'very difficult' THEN 5
-    END AS difficulty_level_int
-    FROM user_task_data
-    WHERE username = $1
-    GROUP BY area_id
-    ORDER BY area_id
+      p.area_id,
+      p.area_name,
+      p.personal_avg_diff,
+      g.global_avg_diff
+    FROM personal_average p
+    LEFT JOIN global_avg g
+      ON p.area_id = g.area_id
+    ORDER BY p.area_id;
   `;
-
 
     const totalProcessingTimeResult = await pool.query(totalProcessingTimeQuery, [username]);
     const averageDifficultyResult = await pool.query(averageDifficultyQuery, [username]);
