@@ -80,13 +80,10 @@ const TaskAnalytics = ({ username }) => {
   
   return (
 <Box>
-  <Typography variant="h6" component="h2" gutterBottom>
-    Statistics
-  </Typography>
   <Grid container spacing={3}>
+    {/* First Box/Graph */}
     <Grid item xs={12} md={6}>
       <Paper sx={{ p: 2, height: 400 }}>
-        {/* Title for the First Chart */}
         <Typography 
           variant="h6" 
           component="h2" 
@@ -109,7 +106,7 @@ const TaskAnalytics = ({ username }) => {
                   tick={{ fontSize: '16px' }} 
                 />
                 <YAxis 
-                  domain={[0, 'auto']} 
+                  domain={[0, 'auto']}
                   label={{
                     value: 'Time Spent (Minutes)',
                     angle: -90,
@@ -164,8 +161,9 @@ const TaskAnalytics = ({ username }) => {
                   label={{ value: '', position: 'bottom', fontSize: '20px', fontFamily: 'Arial' }} 
                   tick={{ fontSize: '16px' }} 
                 />
-                <YAxis 
-                  domain={[0, 5]} 
+                <YAxis
+                  domain={[0, 5]}
+                  ticks={[0, 1, 2, 3, 4, 5]}
                   label={{
                     value: 'Difficulty',
                     angle: -90,
