@@ -8,27 +8,21 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
-const TaskCompletion = ({ taskCompletions }) => {
-  const [expandedAreas, setExpandedAreas] = useState({});
-  const [sortConfig, setSortConfig] = useState({
+const TaskCompletion = ({taskCompletions}) => {
+  const [expandedAreas, setExpandedAreas] = useState({}); // State that tracks which areas are expanded
+  const [sortConfig, setSortConfig] = useState({ // state to manage sorting
     key: null,
     direction: 'asc',
     areaName: null
   });
 
-  if (!taskCompletions || taskCompletions.length === 0) {
-    return (
-      <Box>
-        <Typography variant="body1">No assignment data available.</Typography>
-      </Box>
-    );
-  }
-
   // Group tasks by area and collect area_ids
   const areaMap = {};
-  
+
   taskCompletions.forEach(task => {
     const areaName = task.area_name;
+
+    // Init area data if does not exist
     if (!areaMap[areaName]) {
       areaMap[areaName] = {
         name: areaName,
@@ -37,18 +31,21 @@ const TaskCompletion = ({ taskCompletions }) => {
         total: 0,
         tasks: []
       };
-    }
-    
-    areaMap[areaName].total += 1;
+    };
+
+    areaMap[areaName].total += 1; // Total task-count
+
+    // Task counts as completed, if solution or partial solution has been submitted 
     if (task.query_text || task.partial_solution) {
       areaMap[areaName].completed += 1;
-    }
+    };
     
+    // Get difficulty if available
     let difficulty = null;
     if (task.difficulty_level !== undefined) difficulty = task.difficulty_level;
-
-    console.log(difficulty);
     
+
+    // Add task to arear's array of tasks
     areaMap[areaName].tasks.push({
       id: task.statement_id,
       name: task.statement_text,
@@ -58,10 +55,21 @@ const TaskCompletion = ({ taskCompletions }) => {
     });
   });
   
-  // Convert to array and sort by area_id
-  let areas = Object.values(areaMap);
-  areas.sort((a, b) => a.area_id - b.area_id);
+  // Special All Tasks area that aggregates all tasks across areas
+  const allTasksArea = {
+    name: 'All Tasks',
+    area_id: 0, // All tasks is first to be rendered. Do not zero-index existing area_id s
+    completed: Object.values(areaMap).reduce((sum, area) => sum + area.completed, 0),
+    total: Object.values(areaMap).reduce((sum, area) => sum + area.total, 0),
+    tasks: Object.values(areaMap).flatMap(area => area.tasks)
+  };
 
+  let areas = Object.values(areaMap); // Convert to array and sort by area_id
+  areas.push(allTasksArea); // Add to existing areas
+
+  areas.sort((a, b) => a.area_id - b.area_id); // sort by area_id
+
+  // Toggles if tasks are expanded or not for area
   const toggleAreaExpansion = (areaName) => {
     setExpandedAreas((prev) => ({
       ...prev,
@@ -69,7 +77,7 @@ const TaskCompletion = ({ taskCompletions }) => {
     }));
   };
 
-  // Format time spent in minutes to a readable format
+  // Format time spent in minutes to readable format
   const formatTimeSpent = (minutes) => {
     if (!minutes) return "-";
     
@@ -92,24 +100,25 @@ const TaskCompletion = ({ taskCompletions }) => {
     'Very Difficult': 5
   };
 
-
-  // Handle sorting
+  // Handle sorting requests for specific columns in area table
   const requestSort = (key, areaName) => {
-    let direction = 'asc';
+    let direction = 'asc'; // set sort to ascending first
     
+    // Change to descending
     if (sortConfig.key === key && sortConfig.direction === 'asc' && sortConfig.areaName === areaName) {
       direction = 'desc';
     }
     
-    setSortConfig({ key, direction, areaName });
+    setSortConfig({key, direction, areaName});
   };
 
-  // Get sorted tasks for an area
+  // Sort tasks in area table based on current sort configuration
   const getSortedTasks = (tasks, areaName) => {
+    // If no sorting key specified or area doesn't match, sort by task_id by default
     if (sortConfig.key === null || sortConfig.areaName !== areaName) {
-      return tasks;
+    return [...tasks].sort((a, b) => a.id - b.id);
     }
-
+    
     return [...tasks].sort((a, b) => {
       let aValue = a[sortConfig.key];
       let bValue = b[sortConfig.key];
@@ -132,10 +141,10 @@ const TaskCompletion = ({ taskCompletions }) => {
       if (aValue > bValue) {
         return sortConfig.direction === 'asc' ? 1 : -1;
       }
-      return 0;
+      return 0; // For equal values return original order
     });
   };
-
+  
   return (
     <Box>
       <Grid container spacing={3} direction="column">
@@ -146,13 +155,13 @@ const TaskCompletion = ({ taskCompletions }) => {
           return (
             <Grid item xs={12} key={area.name}>
               <Box
-                sx={{
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  backgroundColor: '#e3f2fd',
-                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                  overflow: 'hidden',
-                }}
+                  sx={{
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    backgroundColor: area.name === 'All Tasks' ? '#F0E3FD' : '#E3F2FD',
+                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                    overflow: 'hidden',
+                  }}
               >
                 {/* Main area display */}
                 <Box
@@ -165,7 +174,11 @@ const TaskCompletion = ({ taskCompletions }) => {
                     position: 'relative',
                   }}
                 >
-                  <Typography variant="h5" sx={{color: '#1565c0', mb: 1}} >
+                  <Typography
+                  variant="h5"
+                  sx={{color: area.name === 'All Tasks' ? '#6A15C0' : '#1565C0',
+                  mb: 1,}}
+                  >
                     {area.name}
                   </Typography>
                   <LinearProgress
@@ -175,13 +188,18 @@ const TaskCompletion = ({ taskCompletions }) => {
                       width: '100%',
                       height: '10px',
                       borderRadius: '5px',
-                      backgroundColor: '#bbdefb',
+                      backgroundColor: area.name === 'All Tasks' ? '#DABBFB' : '#BBDEFB',
                       '& .MuiLinearProgress-bar': {
-                        backgroundColor: '#2196f3',
+                        backgroundColor: area.name === 'All Tasks' ? '#8921F2' : '#2196F3',
                       },
                     }}
                   />
-                  <Typography variant="body1" sx={{ color: '#1565c0', mt: 1 }}>
+                  <Typography
+                  variant="body1" sx={{
+                    color: area.name === 'All Tasks' ? '#6A15C0' : '#1565C0',
+                    mt: 1,
+                    }}
+                  >
                     {area.completed} / {area.total} tasks completed
                   </Typography>
                   {/* Dropdown button */}
@@ -200,17 +218,17 @@ const TaskCompletion = ({ taskCompletions }) => {
                     <Table size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                          <TableCell align="center" sx={{fontWeight: 'bold'}}>
                             <TableSortLabel
                               active={sortConfig.key === 'id' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'id' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('id', area.name)}
                             >
-                              <span style={{ marginRight: '24px' }}></span>
+                              <span style={{marginRight: '24px'}}></span>
                               Task ID
                             </TableSortLabel>
                           </TableCell>
-                          <TableCell align="left" sx={{ fontWeight: 'bold' }}> {/* Left-align Task column */}
+                          <TableCell align="left" sx={{fontWeight: 'bold'}}>
                             <TableSortLabel
                               active={sortConfig.key === 'name' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'name' ? sortConfig.direction : 'asc'}
@@ -219,33 +237,33 @@ const TaskCompletion = ({ taskCompletions }) => {
                               Task
                             </TableSortLabel>
                           </TableCell>
-                          <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                          <TableCell align="center" sx={{fontWeight: 'bold'}}>
                             <TableSortLabel
                               active={sortConfig.key === 'isCompleted' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'isCompleted' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('isCompleted', area.name)}
                             >
-                               <span style={{ marginRight: '24px' }}></span>
+                               <span style={{marginRight: '24px'}}></span>
                               Status
                             </TableSortLabel>
                           </TableCell>
-                          <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                          <TableCell align="center" sx={{fontWeight: 'bold'}}>
                             <TableSortLabel
                               active={sortConfig.key === 'difficulty' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'difficulty' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('difficulty', area.name)}
                             >
-                               <span style={{ marginRight: '24px' }}></span>
+                               <span style={{marginRight: '24px'}}></span>
                               Difficulty
                             </TableSortLabel>
                           </TableCell>
-                          <TableCell align="center" sx={{ fontWeight: 'bold' }}>
+                          <TableCell align="center" sx={{fontWeight: 'bold'}}>
                             <TableSortLabel
                               active={sortConfig.key === 'time_spent' && sortConfig.areaName === area.name}
                               direction={sortConfig.key === 'time_spent' ? sortConfig.direction : 'asc'}
                               onClick={() => requestSort('time_spent', area.name)}
                             >
-                               <span style={{ marginRight: '24px' }}></span>
+                               <span style={{marginRight: '24px'}}></span>
                               Time Spent
                             </TableSortLabel>
                           </TableCell>
@@ -255,12 +273,12 @@ const TaskCompletion = ({ taskCompletions }) => {
                         {sortedTasks.map((task) => (
                           <TableRow key={task.id}>
                             <TableCell align="center">{task.id}</TableCell>
-                            <TableCell align="left">{task.name}</TableCell> {/* Left-align Task column */}
+                            <TableCell align="left">{task.name}</TableCell>
                             <TableCell align="center">
                               {task.isCompleted ? (
-                                <CheckIcon sx={{ color: 'green' }} />
+                                <CheckIcon sx={{color: 'green'}} />
                               ) : (
-                                <CloseIcon sx={{ color: 'red' }} />
+                                <CloseIcon sx={{color: 'red'}} />
                               )}
                             </TableCell>
                             <TableCell align="center">{task.isCompleted ? (task.difficulty || 'N/A') : '-'}</TableCell>
@@ -281,3 +299,4 @@ const TaskCompletion = ({ taskCompletions }) => {
 };
 
 export default TaskCompletion;
+

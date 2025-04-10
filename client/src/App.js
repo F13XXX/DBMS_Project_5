@@ -4,7 +4,8 @@ import UserPerformanceComponent from './components/UserPerformanceComponent';
 function App() {
   return (
     <div className="App">
-      <UserPerformanceComponent username="alice" />
+      {/*Call this Component with username={username}, to incorporate into nosqlconceptstool.*/}
+      <UserPerformanceComponent username="bob" />
     </div>
   );
 }
