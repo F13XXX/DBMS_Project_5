@@ -11,6 +11,37 @@ A user performance dashboard that provides insights into user profiles, task com
 
 ---
 
+## Setup
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/davott46/DBMS_Project_5.git
+   ```
+2. **Navigate to the Project Directory:**
+   ```bash
+   cd DBMS_Project_5
+   ```
+3. **Install Dependencies**
+   ```bash
+   cd client
+   npm install
+   cd ../server
+   npm install
+   ```
+4. **Setup Database**
+   ```bash
+   sudo -u postgres psql
+   CREATE DATABASE user_task;
+   \\c user_task
+   ```
+   Run the database.sql code in the terminal.
+
+5. **Start Server and Application**
+   ```bash
+   node server.js
+   cd ../client
+   npm start
+   ```
+
 ## 🧩 Frontend Components
 
 ### 1. `UserProfile.js`
@@ -21,8 +52,7 @@ A user performance dashboard that provides insights into user profiles, task com
 - `userData`: Object containing user details (`user_name`).
 
 **Features**:
-- Renders avatar and username.
-- Returns `null` if `userData` is not provided.
+- Renders avatar, username, and user role.
 
 **Dependencies**:
 - Material-UI: `Typography`, `Avatar`, `Box`, `Chip`
@@ -30,25 +60,7 @@ A user performance dashboard that provides insights into user profiles, task com
 
 ---
 
-### 2. `UserPerformanceComponent.js`
-
-**Purpose**: Main container integrating `UserProfile`, `TaskCompletion`, and `TaskAnalytics`.
-
-**Props**:
-- `username`: Username of the user whose data is fetched.
-
-**Features**:
-- Fetches user profile, task completions, and analytics from backend.
-- Handles loading and error states.
-- Displays performance summary.
-
-**Dependencies**:
-- Material-UI: `Container`, `Paper`, `Typography`, `CircularProgress`
-- Custom: `UserProfile`, `TaskCompletion`, `TaskAnalytics`
-
----
-
-### 3. `TaskAnalytics.js`
+### 2. `TaskAnalytics.js`
 
 **Purpose**: Visualizes analytics data (e.g., time spent, difficulty rating).
 
@@ -56,7 +68,6 @@ A user performance dashboard that provides insights into user profiles, task com
 - `username`: Username for analytics query.
 
 **Features**:
-- Fetches analytics data from backend.
 - Displays:
   - Time spent vs. global average
   - Difficulty rating vs. global average
@@ -68,7 +79,7 @@ A user performance dashboard that provides insights into user profiles, task com
 
 ---
 
-### 4. `TaskCompletion.js`
+### 3. `TaskCompletion.js`
 
 **Purpose**: Displays detailed task completion info grouped by areas.
 
@@ -83,6 +94,23 @@ A user performance dashboard that provides insights into user profiles, task com
 **Dependencies**:
 - Material-UI: `Table`, `Collapse`, `LinearProgress`
 - Icons: `KeyboardArrowDownIcon`, `KeyboardArrowUpIcon`
+
+---
+### 4. `UserPerformanceComponent.js`
+
+**Purpose**: Main container integrating `UserProfile`, `TaskCompletion`, and `TaskAnalytics`.
+
+**Props**:
+- `username`: Username of the user whose data is fetched.
+
+**Features**:
+- Fetches user profile, task completions, and analytics from backend.
+- Handles loading and error states.
+- Displays performance summary.
+
+**Dependencies**:
+- Material-UI: `Container`, `Paper`, `Typography`, `CircularProgress`
+- Custom: `UserProfile`, `TaskCompletion`, `TaskAnalytics`
 
 ---
 
@@ -102,7 +130,7 @@ Fetches user profile data.
 ```
 
 **Errors**:
-- 404 if user does not exist
+- Failed to load user performance data
 
 ---
 
@@ -125,7 +153,7 @@ Returns analytics on processing time and difficulty vs. global average.
   "totalProcessingTime": [
     {
       "area_id": 1,
-      "area_name": "Math",
+      "area_name": "Postgres",
       "total_time": 120,
       "global_avg": 100
     }
@@ -133,7 +161,7 @@ Returns analytics on processing time and difficulty vs. global average.
   "averageDifficulty": [
     {
       "area_id": 1,
-      "area_name": "Math",
+      "area_name": "Postgres",
       "personal_avg_diff": 3,
       "global_avg_diff": 2.5
     }
@@ -151,16 +179,3 @@ Returns analytics on processing time and difficulty vs. global average.
   - SQL aggregations for analytics
 
 ---
-
-## 🚀 Deployment
-
-- **Frontend**: Netlify, Vercel (built via Webpack or CRA)
-- **Backend**: Node.js on Heroku or AWS EC2
-
----
-
-## 🔮 Future Enhancements
-
-- Pagination for large datasets
-- Authentication and authorization
-- Improved error messaging
