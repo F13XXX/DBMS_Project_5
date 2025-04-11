@@ -1,8 +1,8 @@
-# User Performance Dashboard
+# User Statistics Dashboard
 
-A user performance dashboard that provides insights into user profiles, task completions, and task analytics.
+A user statistics dashboard based on the PERN stack. It is to be integrated into NoSQLConcepts tool, and displays, the users' task completions, and task analytics.
 
-## 🛠 Tech Stack
+## Dependencies
 
 - **Frontend**: React, Material-UI
 - **Backend**: Node.js, Express
@@ -31,9 +31,9 @@ A user performance dashboard that provides insights into user profiles, task com
    ```bash
    sudo -u postgres psql
    CREATE DATABASE user_task;
-   \\c user_task
+   \c user_task
    ```
-   Run the database.sql code in the terminal.
+   Run the database.sql code in the terminal (or insert your own data).
 
 5. **Start Server and Application**
    ```bash
@@ -42,14 +42,14 @@ A user performance dashboard that provides insights into user profiles, task com
    npm start
    ```
 
-## 🧩 Frontend Components
+## Frontend Components
 
 ### 1. `UserProfile.js`
 
-**Purpose**: Displays basic user information (e.g., username and role).
+**Purpose**: Displays basic user information.
 
 **Props**:
-- `userData`: Object containing user details (`user_name`).
+- `userData`: Contains user details.
 
 **Features**:
 - Renders avatar, username, and user role.
@@ -60,35 +60,16 @@ A user performance dashboard that provides insights into user profiles, task com
 
 ---
 
-### 2. `TaskAnalytics.js`
+### 2. `TaskCompletion.js`
 
-**Purpose**: Visualizes analytics data (e.g., time spent, difficulty rating).
-
-**Props**:
-- `username`: Username for analytics query.
-
-**Features**:
-- Displays:
-  - Time spent vs. global average
-  - Difficulty rating vs. global average
-- Handles loading and errors.
-
-**Dependencies**:
-- Charting: `Recharts`
-- Material-UI: `Grid`, `Paper`, `Typography`, `CircularProgress`
-
----
-
-### 3. `TaskCompletion.js`
-
-**Purpose**: Displays detailed task completion info grouped by areas.
+**Purpose**: Displays task completion info grouped by areas and overall.
 
 **Props**:
 - `taskCompletions`: Array of task completion details.
 
 **Features**:
 - Groups tasks by area and calculates stats.
-- Sorts by difficulty, time, status.
+- Allows for sorting by difficulty, time, status, etc.
 - Collapsible area sections.
 
 **Dependencies**:
@@ -96,6 +77,25 @@ A user performance dashboard that provides insights into user profiles, task com
 - Icons: `KeyboardArrowDownIcon`, `KeyboardArrowUpIcon`
 
 ---
+
+### 3. `TaskAnalytics.js`
+
+**Purpose**: Visualizes analytics data (time spent per assignment, difficulty rating per assignment).
+
+**Props**:
+- `taskAnalytics`: Array of analytics data.
+
+**Features**:
+- Displays:
+  - Total Time Spent by User vs. Global Average per Assignment
+  - Average Difficulty rating vs. Global Average per Assignment
+
+**Dependencies**:
+- Charting: `Recharts`
+- Material-UI: `Grid`, `Paper`, `Typography`, `CircularProgress`
+
+---
+
 ### 4. `UserPerformanceComponent.js`
 
 **Purpose**: Main container integrating `UserProfile`, `TaskCompletion`, and `TaskAnalytics`.
@@ -106,7 +106,7 @@ A user performance dashboard that provides insights into user profiles, task com
 **Features**:
 - Fetches user profile, task completions, and analytics from backend.
 - Handles loading and error states.
-- Displays performance summary.
+- Displays the other components' contents.
 
 **Dependencies**:
 - Material-UI: `Container`, `Paper`, `Typography`, `CircularProgress`
@@ -114,7 +114,7 @@ A user performance dashboard that provides insights into user profiles, task com
 
 ---
 
-## 🔌 Backend API
+## Backend API
 
 ### `GET /api/users/:username`
 
@@ -124,8 +124,8 @@ Fetches user profile data.
 
 ```json
 {
-  "user_name": "JohnDoe",
-  "role": "Admin"
+  "user_name": "alice",
+  "role": "Regular User"
 }
 ```
 
@@ -138,13 +138,13 @@ Fetches user profile data.
 
 Fetches task completion details grouped by areas.
 
-**Returns**: Array of tasks with metadata (area name, statement, difficulty, time, etc.)
+**Returns**: Array of tasks data (area name, statement, difficulty, time, etc.)
 
 ---
 
 ### `GET /api/users/:username/task-analytics`
 
-Returns analytics on processing time and difficulty vs. global average.
+Returns analytics on processing time and difficulty.
 
 **Sample**:
 
@@ -168,14 +168,3 @@ Returns analytics on processing time and difficulty vs. global average.
   ]
 }
 ```
-
----
-
-## 🗃️ Database Integration
-
-- PostgreSQL used for querying:
-  - `users` table for profiles
-  - `task_statements` joined with `task_areas` for completions
-  - SQL aggregations for analytics
-
----
