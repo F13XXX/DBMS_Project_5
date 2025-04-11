@@ -38,7 +38,9 @@ A user statistics dashboard based on the PERN stack. It is to be integrated into
 5. **Start Server and Application**
    ```bash
    node server.js
-   cd ../client
+   ```
+   Switch to a new terminal and cd into DBMS_Project_5/client
+      ```bash
    npm start
    ```
 
