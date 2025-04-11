@@ -1,8 +1,8 @@
 import React from 'react';
-import { Typography, Avatar, Box, Chip } from '@mui/material';
+import {Typography, Avatar, Box, Chip} from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 
-const UserProfile = ({ userData }) => {
+const UserProfile = ({userData}) => {
   if (!userData) return null;
   
   return (
@@ -11,7 +11,7 @@ const UserProfile = ({ userData }) => {
         User Profile
       </Typography>
       <Box display="flex" alignItems="center" gap={2}>
-        <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main' }}>
+        <Avatar sx={{width: 56, height: 56, bgcolor: 'primary.main'}}>
           <PersonIcon />
         </Avatar>
         <Box>
@@ -20,7 +20,7 @@ const UserProfile = ({ userData }) => {
             label={userData.role} 
             color="primary" 
             size="small" 
-            sx={{ mt: 1 }}
+            sx={{ mt:1}}
           />
         </Box>
       </Box>
